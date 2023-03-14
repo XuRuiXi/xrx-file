@@ -1,5 +1,6 @@
 ### 讲透前端文件切片上传、断点续传、拖拽上传、图片预览、文件下载（File、Blob、FormData、FileReader、URL.createObjectURL）  
 
+[github仓库](https://github.com/XuRuiXi/xrx-file)
 ---
 
 要了解文件上传，首先需要了解blob对象。  
@@ -25,6 +26,15 @@ const myBlob = new Blob(["了解Blob"], { type: "text/plain" });
 ```
 
 ![image.png](./src/assets/blob.png)
+
+**Blob的核心方法：**  
+slice([start[, end[, contentType]]])  
+返回一个新的 Blob 对象，包含原 Blob 对象的一部分数据。
+- start：可选，类型为 Number，表示开始位置的索引，默认值为 0。
+- end：可选，类型为 Number，表示结束位置的索引，默认值为 blob 的大小。
+- contentType：可选，类型为 String，表示新 Blob 对象的 MIME 类型，默认值为原 Blob 对象的 MIME 类型。
+
+
 
 使用场景：
 
