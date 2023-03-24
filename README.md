@@ -503,3 +503,31 @@ const App = () => {
   );
 };
 ```
+
+
+#### **秒传**  
+- 通过md5来判断文件是否已经上传过，如果已经上传过，则不需要再次上传
+```js
+const App = () => {
+  const change = async e => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    const buffer = await file.slice(0, 100).arrayBuffer();
+    const md5Data = md5(buffer);
+    formData.append('md5', md5Data);
+    const checkResult = await axios.post('http://localhost:1111/checkFile', { md5: md5Data });
+    if (checkResult.data.isExist) {
+      console.log('文件已存在');
+      return;
+    }
+    const uploadResult = await axios.post('http://localhost:1111/upload', formData);
+    console.log(uploadResult);
+  };
+  return (
+    <div className={styles.root}>
+      <input type="file" onChange={change} />
+    </div>
+  );
+};
+```

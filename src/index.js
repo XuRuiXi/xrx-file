@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import md5 from 'js-md5';
 import { createRoot } from 'react-dom/client';
 import axios from 'axios';
 import styles from './index.less';
@@ -171,33 +172,134 @@ import styles from './index.less';
 
 
 // 拖拽上传
-const App = () => {
-  const dragover = e => {
-    // 阻止默认事件
-    e.preventDefault();
-    // 阻止冒泡
-    e.stopPropagation();
-  };
+// const App = () => {
+//   const dragover = e => {
+//     // 阻止默认事件
+//     e.preventDefault();
+//     // 阻止冒泡
+//     e.stopPropagation();
+//   };
 
-  const drop = e => {
-    // 阻止默认事件
-    e.preventDefault();
-    // 阻止冒泡
-    e.stopPropagation();
-    // DataTransfer表示拖放操作中的数据
-    const file = e.dataTransfer.files[0];
+//   const drop = e => {
+//     // 阻止默认事件
+//     e.preventDefault();
+//     // 阻止冒泡
+//     e.stopPropagation();
+//     // DataTransfer表示拖放操作中的数据
+//     const file = e.dataTransfer.files[0];
+//     const formData = new FormData();
+//     formData.append('file', file);
+//     axios.post('http://localhost:1111/upload', formData).then(res => {
+//       console.log(res);
+//     }
+//     );
+//   };
+
+//   return (
+//     <div className={styles.root} onDragOver={dragover} onDrop={drop} >
+//       请拖到此处上传
+//       <input type="file" />
+//     </div>
+//   );
+// };
+
+// 秒传
+// const App = () => {
+//   const change = async e => {
+//     const file = e.target.files[0];
+//     const formData = new FormData();
+//     formData.append('file', file);
+//     const buffer = await file.slice(0, 100).arrayBuffer();
+//     const md5Data = md5(buffer);
+//     formData.append('md5', md5Data);
+//     const checkResult = await axios.post('http://localhost:1111/checkFile', { md5: md5Data });
+//     if (checkResult.data.isExist) {
+//       console.log('文件已存在');
+//       return;
+//     }
+//     const uploadResult = await axios.post('http://localhost:1111/upload', formData);
+//     console.log(uploadResult);
+//   };
+//   useEffect(() => {
+//     axios.get('http://localhost:1111/getAllFile')
+//       .then(res => {
+//         console.log(res.data);
+//       });
+//   }, []);
+//   return (
+//     <div className={styles.root}>
+//       <input type="file" onChange={change} />
+//     </div>
+//   );
+// };
+
+
+const App = () => {
+  const fileRef = useRef(null);
+  const [fileList, setFileList] = useState([]);
+  const upload = async () => {
+    const file = fileRef.current.files[0];
     const formData = new FormData();
     formData.append('file', file);
-    axios.post('http://localhost:1111/upload', formData).then(res => {
-      console.log(res);
+    const buffer = await file.slice(0, 100).arrayBuffer();
+    const md5Data = md5(buffer);
+    formData.append('md5', md5Data);
+    const checkResult = await axios.post('http://localhost:1111/checkFile', { md5: md5Data });
+    if (checkResult.data.isExist) {
+      console.log('文件已存在');
+      return;
     }
-    );
+    const uploadResult = await axios.post('http://localhost:1111/upload', formData);
+    console.log(uploadResult);
+    getAllFile();
   };
 
+
+  const del = async id => {
+    const delResult = await axios.post('http://localhost:1111/delFile', { id });
+    console.log(delResult);
+    getAllFile();
+  };
+
+  const getAllFile = async () => {
+    const res = await axios.get('http://localhost:1111/getAllFile');
+    setFileList(res.data);
+  };
+
+  const preview = url => {
+    // 删除原来的img
+    const img = document.getElementById('img');
+    if (img) {
+      document.body.removeChild(img);
+    }
+    const _img = document.createElement('img');
+    _img.id = 'img';
+    _img.src = url;
+    document.body.appendChild(_img);
+  };
+  
+
+  useEffect(() => {
+    getAllFile();
+  }, []);
   return (
-    <div className={styles.root} onDragOver={dragover} onDrop={drop} >
-      请拖到此处上传
-      <input type="file" />
+    <div className={styles.root}>
+      <input type="file" ref={fileRef} />
+      <button onClick={upload}>上传</button>
+      <div>
+        <div>文件列表</div>
+        <div>
+          {
+            fileList.map(item => (
+              <div key={item.id}>
+                {item.file.filename}
+                <button onClick={() => del(item.id)}>删除</button>
+                <button onClick={() => preview(item.url)}>预览</button>
+              </div>
+            ))
+          }
+        </div>
+      </div>
     </div>
   );
 };
