@@ -1,5 +1,6 @@
 const os = require('os');
 const fs = require('fs');
+
 function getLocalIP() {
   var interfaces = os.networkInterfaces();
   for (var devName in interfaces) {
@@ -53,6 +54,7 @@ const delFile = (id, path) => {
       function (err, data) {
         data = JSON.parse(data);
         const list = data?.list || [];
+        const mapFIle = list.find((item) => item.id === id);
         const newList = list.filter((item) => item.id !== id);
         data.list = newList;
         fs.writeFile(
@@ -60,6 +62,17 @@ const delFile = (id, path) => {
           JSON.stringify(data, null, 2),
           function (err) {
             resolve(err);
+          }
+        );
+        // 删除文件
+        fs.unlink(
+          mapFIle.file.path,
+          function (err) {
+            if (err) {
+              reject(err);
+            } else {
+              resolve("删除成功");
+            }
           }
         );
       }
