@@ -4,17 +4,14 @@ const bodyParser = require("body-parser");
 // 文件系统
 const fs = require("fs");
 
-const { getLocalIP, addFile, delFile } = require("./utils");
+const { getLocalIP, updateJson, delFile, addFile } = require("./utils");
 const { v4: uuidv4 } = require("uuid");
 // multer是一个node.js中间件，用于处理multipart/form-data类型的表单数据，它主要用于上传文件
 const multer = require("multer");
 // multiparty是一个node.js中间件，用于处理multipart/form-data类型的表单数据，它主要用于上传文件
 const multiparty = require('multiparty');
-const EventEmitter = require('events');
 
 const path = require('path');
-
-const { Buffer } = require('buffer');
 
 // 临时文件存储路径
 const STATIC_TEMPORARY = path.resolve(__dirname, './static/temporaryFolder');
@@ -50,67 +47,78 @@ const upload = multer({ storage });
 
 /* 单文件上传 */
 // file是文件域的name,必须和前端formdata的key一致
-app.post("/upload", upload.single("file"), async (req, res) => {
-  //req.body是普通表单域
-  //req.file是文件域
+app.post("/upload", upload.single("file"), (req, res) => {
   let msg = {
     body: req.body,
     file: req.file,
     code: 200,
     id: uuidv4(),
   };
-  await addFile(msg, path.resolve(__dirname + "/static/relative/index.json"));
+  updateJson(msg, path.resolve(__dirname + "/static/relative/index.json"));
   res.json(msg);
 });
 
-app.get('/merge', async (req, res) => {
-  const { filename } = req.query;
+const sliceObj = {};
 
-  try {
-    let len = 0;
-    const bufferList = fs.readdirSync(`${STATIC_TEMPORARY}/${filename}`).map(hash => {
-      const buffer = fs.readFileSync(`${STATIC_TEMPORARY}/${filename}/${hash}`);
-      len += buffer.length;
-      return buffer;
-    });
-
-    const buffer = Buffer.concat(bufferList, len);
-    const ws = fs.createWriteStream(`${STATIC_FILES}/${filename}`);
-    ws.write(buffer);
-    ws.close();
-
-    res.send(`切片合并完成`);
-  } catch (error) {
-    console.error(error);
-  }
-});
-
+// 文件切片上传
 app.post("/uploadMulti", async (req, res) => {
   const multipart = new multiparty.Form();
-  const myEmitter = new EventEmitter();
-  const formData = {
-    filename: undefined,
-    hash: undefined,
-    chunk: undefined,
-  };
-
-  multipart.parse(req, function (err, fields, files) {
-    formData.chunk = files['chunk'][0];
-    formData.filename = fields['filename'][0];
-    formData.hash = fields['hash'][0];
-    myEmitter.emit('start');
-  });
-
-  myEmitter.on('start', function () {
-    const { filename, hash, chunk } = formData;
+  multipart.parse(req, function (err, filelds, files) {
+    // fileds是表单的其他数据
+    // files是上传的文件
+    const chunk = files.chunk[0];
+    const filename = filelds.filename[0];
+    const hash = filelds.hash[0];
+    const total = filelds.total[0];
+    // 临时文件夹路径
     const dir = `${STATIC_TEMPORARY}/${filename}`;
+
+
+    !sliceObj[filename] && (sliceObj[filename] = {});
+    const slicer = sliceObj[filename];
+    if (slicer) {
+      // 清除上一次的定时器
+      clearTimeout(slicer.timmer);
+      slicer.timmer = setTimeout(() => {
+        console.log('切片上传超时，清空切片');
+        Reflect.deleteProperty(sliceObj, filename);
+      }, 1000 * 30);
+    }
+
     try {
+      // 判断文件夹是否存在,不存在则创建
       if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+      // 读取文件流
       const buffer = fs.readFileSync(chunk.path);
+      // 写入文件
       const ws = fs.createWriteStream(`${dir}/${hash}`);
       ws.write(buffer);
-      ws.close();
-      res.send(`${filename}-${hash} 切片上传成功`);
+      ws.close(function(){
+        sliceObj[filename].count = (sliceObj[filename].count || 0) + 1;
+        if(sliceObj[filename].count === Number(total)){
+          console.log("开始合并切片");
+          addFile(dir, `${STATIC_FILES}/${filename}`);
+
+          let msg = {
+            file: {
+              filename,
+              path: `${STATIC_FILES}/${filename}`,
+            },
+            code: 200,
+            id: uuidv4(),
+          };
+          updateJson(msg, path.resolve(__dirname + "/static/relative/index.json"));
+
+
+          res.send(`${filename} 文件上传成功`);
+          console.log("切片合并完成");
+          // 重置计数器
+          clearTimeout(slicer.timmer);
+          Reflect.deleteProperty(sliceObj, filename);
+        } else {
+          res.send(`${filename}-${hash} 切片上传成功`);
+        }
+      });
     } catch (error) {
       console.error(error);
     }
@@ -136,7 +144,7 @@ app.post("/checkFile", (req, res) => {
     __dirname + "/static/relative/index.json",
     "utf-8",
     function (err, data) {
-      data = JSON.parse(data);
+      data = JSON.parse(data || "{}");
       const list = data?.list || [];
       const isExist = list.some((item) => item.body.md5 === md5);
       res.json({
@@ -162,7 +170,7 @@ app.get("/getAllFile", (req, res) => {
     __dirname + "/static/relative/index.json",
     "utf-8",
     function (err, data) {
-      data = JSON.parse(data);
+      data = JSON.parse(data || "{}");
       const list = data?.list || [];
       res.json(list.map((item) => {
         return {

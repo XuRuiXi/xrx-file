@@ -1,3 +1,28 @@
 {
-  "list": []
+  "list": [
+    {
+      "file": {
+        "filename": "1616134542(1).jpg",
+        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1616134542(1).jpg"
+      },
+      "code": 200,
+      "id": "a0118e54-552c-47e7-98e2-d07f89fcaf51"
+    },
+    {
+      "file": {
+        "filename": "1609743801(1).jpg",
+        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1609743801(1).jpg"
+      },
+      "code": 200,
+      "id": "4ab66330-9b37-41ad-b1d5-a9c1c6adfa02"
+    },
+    {
+      "file": {
+        "filename": "1609744098(1).jpg",
+        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1609744098(1).jpg"
+      },
+      "code": 200,
+      "id": "103e2d90-c81c-4a41-b254-3bca85267ae5"
+    }
+  ]
 }

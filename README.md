@@ -222,6 +222,10 @@ const App = () => {
   );
 };
 
+```
+
+```js
+
 // 多文件上传
 
 /* 
@@ -241,17 +245,68 @@ const App = () => {
 /* 
   我们也可以不设置multiple属性，达到多文件上传的目的（一个一个的添加，缓存进数组里面再一次性上传）
 */
+const App = () => {
+  const inputRef = useRef(null);
+  const [list, setList] = useState([]);
+
+  const uploadFileChunks = async () => {
+    const chunksList = list.map(item => {
+      const formData = new FormData();
+      formData.append('file', item);
+      return formData;
+    });
+    for (let i = 0; i < chunksList.length; i++) {
+      const formData = chunksList[i];
+      await axios.post('http://localhost:1111/upload', formData);
+    }
+  };
+
+  const change = e => {
+    const files = e.target.files;
+    const _file = [];
+    [...files].forEach(f => {
+      list.some(item => item.name === f.name) || _file.push(f);
+    });
+    setList([...list, ..._file]);
+    // 清空input
+    inputRef.current.value = '';
+  };
+
+  const del = name => {
+    setList(list.filter(item => item.name !== name));
+  };
+  return (
+    <div className={styles.root}>
+      <input type="file" ref={inputRef} multiple onChange={change} />
+      {
+        list.map(item => {
+          return (
+            <div key={item.name}>
+              {item.name}
+              <button onClick={() => del(item.name)}>删除</button>
+            </div>
+          );
+        }
+        )
+      }
+      <button onClick={uploadFileChunks}>上传</button>
+    </div>
+  );
+};
 ```
 
-#### **图片预览**
+---
+
+
+#### **图片/pdf预览**
 
 ```js
-// 图片预览
+// 图片/pdf预览
 const App = () => {
   const [base64, setBase64] = useState('');
+  const [iframeUrl, setIframeUrl] = useState('');
   const change = e => {
-    // file转base64预览
-
+    // file转base64预览图片
     // const file = e.target.files[0];
     // const fileReader = new FileReader();
     // fileReader.readAsDataURL(file);
@@ -259,15 +314,26 @@ const App = () => {
     //   setBase64(e.target.result);
     // };
 
-    // url -> blob映射预览
+    // url -> blob映射预览(图片/pdf)
     const file = e.target.files[0];
     const url = URL.createObjectURL(file);
     setBase64(url);
+    // setIframeUrl(url);
+
+    // 生成blob映射之后，通过a标签打开预览
+    // const a = document.createElement('a');
+    // a.href = url;
+    // a.target = '_blank';
+    // a.click();
+
+    URL.revokeObjectURL(url);
+
   };
   return (
     <div className={styles.root}>
       <input type="file" onChange={change} />
       <img src={base64} />
+      <iframe src={iframeUrl} />
     </div>
   );
 };
@@ -287,6 +353,7 @@ const App = () => {
       const url = URL.createObjectURL(res.data);
       const a = document.createElement('a');
       a.href = url;
+      // 需要预先知道文件名（文件类型）
       a.download = 'test.png';
       a.click();
       URL.revokeObjectURL(url);
