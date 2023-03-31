@@ -43,7 +43,16 @@ const storage = multer.diskStorage({
   },
 });
 // 创建multer实例
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  fileFilter(req, file, callback) {
+    // 解决中文名乱码的问题 latin1 是一种编码格式
+    file.originalname = Buffer.from(file.originalname, "latin1").toString(
+      "utf8"
+    );
+    callback(null, true);
+  },
+});
 
 /* 单文件上传 */
 // file是文件域的name,必须和前端formdata的key一致
@@ -59,7 +68,6 @@ app.post("/upload", upload.single("file"), (req, res) => {
 });
 
 const sliceObj = {};
-
 // 文件切片上传
 app.post("/uploadMulti", async (req, res) => {
   const multipart = new multiparty.Form();

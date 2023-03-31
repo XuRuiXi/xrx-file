@@ -23,7 +23,7 @@ function updateJson(info, path) {
     path,
     "utf-8",
     function (err, data) {
-      data = JSON.parse(data);
+      data = JSON.parse(data || "{}");
       if (!data.list) {
         data.list = [];
       }

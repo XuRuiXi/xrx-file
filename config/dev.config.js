@@ -12,6 +12,12 @@ module.exports = {
     historyApiFallback: {
       index: '/index.html'
     },
+    proxy: {
+      '/': {
+        target: 'http://localhost:1111',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [
     new ReactRefreshPlugin(),

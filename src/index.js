@@ -3,6 +3,7 @@ import { Tabs } from 'antd';
 import md5 from 'js-md5';
 import { createRoot } from 'react-dom/client';
 import FileReview from './components/FileReview';
+import FileUpload from './components/FileUpload';
 import axios from 'axios';
 import styles from './index.less';
 
@@ -134,59 +135,59 @@ const { TabPane } = Tabs;
 // };
 
 // 大文件切片上传
-// const App = () => {
-//   const SIZE = 1024 * 30; // 30kb
-//   // 创建切片
-//   const createFileChunks = function (file) {
-//     const count = file.size;
-//     if (count <= SIZE) return [file];
-//     const mid = Math.floor(count / 2);
-//     const leftContent = file.slice(0, mid);
-//     const rightContent = file.slice(mid);
-//     return [...createFileChunks(leftContent), ...createFileChunks(rightContent)];
-//   };
+const App = () => {
+  const SIZE = 1024 * 30; // 30kb
+  // 创建切片
+  const createFileChunks = function (file) {
+    const count = file.size;
+    if (count <= SIZE) return [file];
+    const mid = Math.floor(count / 2);
+    const leftContent = file.slice(0, mid);
+    const rightContent = file.slice(mid);
+    return [...createFileChunks(leftContent), ...createFileChunks(rightContent)];
+  };
 
-//   // 上传切片
-//   const uploadFileChunks = async function (fileChunks, filename) {
-//     const total = fileChunks.length;
-//     const chunksList = fileChunks.map((chunk, index) => {
-//       let formData = new FormData();
-//       formData.append('filename', filename);
-//       formData.append('hash', index);
-//       formData.append('chunk', chunk);
-//       formData.append('total', total);
-//       return {
-//         formData
-//       };
-//     });
-//     const axiosList = chunksList.map(({
-//       formData
-//     }) => axios({
-//       method: 'post',
-//       url: 'http://localhost:1111/uploadMulti',
-//       data: formData
-//     }));
+  // 上传切片
+  const uploadFileChunks = async function (fileChunks, filename) {
+    const total = fileChunks.length;
+    const chunksList = fileChunks.map((chunk, index) => {
+      let formData = new FormData();
+      formData.append('filename', filename);
+      formData.append('hash', index);
+      formData.append('chunk', chunk);
+      formData.append('total', total);
+      return {
+        formData
+      };
+    });
+    const axiosList = chunksList.map(({
+      formData
+    }) => axios({
+      method: 'post',
+      url: 'http://localhost:1111/uploadMulti',
+      data: formData
+    }));
 
-//     // 限制并发数
-//     const concurrencyQuantity = 3;
-//     for (let i = 0, len = axiosList.length; i < len; i += concurrencyQuantity) {
-//       const list = i + concurrencyQuantity < len ? axiosList.slice(i, i + concurrencyQuantity) : axiosList.slice(i);
-//       await Promise.all(list);
-//     }
-//   };
+    // 限制并发数
+    const concurrencyQuantity = 3;
+    for (let i = 0, len = axiosList.length; i < len; i += concurrencyQuantity) {
+      const list = i + concurrencyQuantity < len ? axiosList.slice(i, i + concurrencyQuantity) : axiosList.slice(i);
+      await Promise.all(list);
+    }
+  };
 
-//   const change = async e => {
-//     const file = e.target.files[0];
-//     const fileChunks = createFileChunks(file);
-//     await uploadFileChunks(fileChunks, file.name);
-//   };
+  const change = async e => {
+    const file = e.target.files[0];
+    const fileChunks = createFileChunks(file);
+    await uploadFileChunks(fileChunks, file.name);
+  };
 
-//   return (
-//     <div className={styles.root}>
-//       <input type="file" onChange={change} />
-//     </div>
-//   );
-// };
+  return (
+    <div className={styles.root}>
+      <input type="file" onChange={change} />
+    </div>
+  );
+};
 
 // 断点续传
 // const App = () => {
@@ -333,81 +334,81 @@ const { TabPane } = Tabs;
 // };
 
 
-const App = () => {
-  const fileRef = useRef(null);
-  const [fileList, setFileList] = useState([]);
-  const upload = async () => {
-    const file = fileRef.current.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    const buffer = await file.slice(0, 100).arrayBuffer();
-    const md5Data = md5(buffer);
-    formData.append('md5', md5Data);
-    const checkResult = await axios.post('http://localhost:1111/checkFile', { md5: md5Data });
-    if (checkResult.data.isExist) {
-      console.log('文件已存在');
-      return;
-    }
-    const uploadResult = await axios.post('http://localhost:1111/upload', formData);
-    console.log(uploadResult);
-    getAllFile();
-  };
+// const App = () => {
+//   const fileRef = useRef(null);
+//   const [fileList, setFileList] = useState([]);
+//   const upload = async () => {
+//     const file = fileRef.current.files[0];
+//     const formData = new FormData();
+//     formData.append('file', file);
+//     const buffer = await file.slice(0, 100).arrayBuffer();
+//     const md5Data = md5(buffer);
+//     formData.append('md5', md5Data);
+//     const checkResult = await axios.post('http://localhost:1111/checkFile', { md5: md5Data });
+//     if (checkResult.data.isExist) {
+//       console.log('文件已存在');
+//       return;
+//     }
+//     const uploadResult = await axios.post('http://localhost:1111/upload', formData);
+//     console.log(uploadResult);
+//     getAllFile();
+//   };
 
 
-  const del = async id => {
-    const delResult = await axios.post('http://localhost:1111/delFile', { id });
-    console.log(delResult);
-    getAllFile();
-  };
+//   const del = async id => {
+//     const delResult = await axios.post('http://localhost:1111/delFile', { id });
+//     console.log(delResult);
+//     getAllFile();
+//   };
 
-  const getAllFile = async () => {
-    const res = await axios.get('http://localhost:1111/getAllFile');
-    setFileList(res.data);
-  };
+//   const getAllFile = async () => {
+//     const res = await axios.get('http://localhost:1111/getAllFile');
+//     setFileList(res.data);
+//   };
 
-  const preview = url => {
-    // 删除原来的img
-    const img = document.getElementById('img');
-    if (img) {
-      document.body.removeChild(img);
-    }
-    const _img = document.createElement('img');
-    _img.id = 'img';
-    _img.src = url;
-    document.body.appendChild(_img);
-  };
+//   const preview = url => {
+//     // 删除原来的img
+//     const img = document.getElementById('img');
+//     if (img) {
+//       document.body.removeChild(img);
+//     }
+//     const _img = document.createElement('img');
+//     _img.id = 'img';
+//     _img.src = url;
+//     document.body.appendChild(_img);
+//   };
   
 
-  useEffect(() => {
-    getAllFile();
-  }, []);
-  return (
-    <div className={styles.root}>
-      <input type="file" ref={fileRef} multiple />
-      <button onClick={upload}>上传</button>
-      <div>
-        <div>文件列表</div>
-        <div>
-          {
-            fileList.map(item => (
-              <div key={item.id}>
-                {item.file.filename}
-                <button onClick={() => del(item.id)}>删除</button>
-                <button onClick={() => preview(item.url)}>预览</button>
-              </div>
-            ))
-          }
-        </div>
-      </div>
-    </div>
-  );
-};
+//   useEffect(() => {
+//     getAllFile();
+//   }, []);
+//   return (
+//     <div className={styles.root}>
+//       <input type="file" ref={fileRef} multiple />
+//       <button onClick={upload}>上传</button>
+//       <div>
+//         <div>文件列表</div>
+//         <div>
+//           {
+//             fileList.map(item => (
+//               <div key={item.id}>
+//                 {item.file.filename}
+//                 <button onClick={() => del(item.id)}>删除</button>
+//                 <button onClick={() => preview(item.url)}>预览</button>
+//               </div>
+//             ))
+//           }
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
 
 const items = [
   {
     key: '1',
     label: `文件上传`,
-    children: `Content of Tab Pane 1`,
+    children: <FileUpload />,
   },
   {
     key: '2',
@@ -419,7 +420,7 @@ const items = [
 const Root = () => {
   return (
     <div className={styles.root}>
-      <Tabs defaultActiveKey="2" items={items} />
+      <Tabs defaultActiveKey="1" items={items} />
     </div>
   );
 };

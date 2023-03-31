@@ -1,28 +1,106 @@
 {
   "list": [
     {
-      "file": {
-        "filename": "1616134542(1).jpg",
-        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1616134542(1).jpg"
+      "body": {
+        "md5": "e7cd5cd7d4694df106f07d3d87388476"
       },
-      "code": 200,
-      "id": "a0118e54-552c-47e7-98e2-d07f89fcaf51"
-    },
-    {
       "file": {
+        "fieldname": "file",
+        "originalname": "1609743801(1).jpg",
+        "encoding": "7bit",
+        "mimetype": "image/jpeg",
+        "destination": "server/static/",
         "filename": "1609743801(1).jpg",
-        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1609743801(1).jpg"
+        "path": "server\\static\\1609743801(1).jpg",
+        "size": 66132
       },
       "code": 200,
-      "id": "4ab66330-9b37-41ad-b1d5-a9c1c6adfa02"
+      "id": "e732dddd-be97-45ec-8a52-596d4de0db7b"
     },
     {
+      "body": {
+        "md5": "2bd0247337b6a2bd86af0ec391af38c2"
+      },
       "file": {
-        "filename": "1609744098(1).jpg",
-        "path": "c:\\Users\\xuruixi\\Desktop\\npm包发布\\xrx-file\\server\\static/1609744098(1).jpg"
+        "fieldname": "file",
+        "originalname": "1616134542(1).jpg",
+        "encoding": "7bit",
+        "mimetype": "image/jpeg",
+        "destination": "server/static/",
+        "filename": "1616134542(1).jpg",
+        "path": "server\\static\\1616134542(1).jpg",
+        "size": 64730
       },
       "code": 200,
-      "id": "103e2d90-c81c-4a41-b254-3bca85267ae5"
+      "id": "3cffe021-419d-4d67-afe7-7a108be16d0f"
+    },
+    {
+      "body": {
+        "md5": "f8e53334f98600e1b31140b18a90f369"
+      },
+      "file": {
+        "fieldname": "file",
+        "originalname": "风景.png",
+        "encoding": "7bit",
+        "mimetype": "image/png",
+        "destination": "server/static/",
+        "filename": "风景.png",
+        "path": "server\\static\\风景.png",
+        "size": 139613
+      },
+      "code": 200,
+      "id": "45248bb6-7cb3-4dbe-a436-93539df307de"
+    },
+    {
+      "body": {
+        "md5": "8dfd71e61019054434d3a92490222db1"
+      },
+      "file": {
+        "fieldname": "file",
+        "originalname": "算网大脑-社会算力接入方案V0.2(1).docx",
+        "encoding": "7bit",
+        "mimetype": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "destination": "server/static/",
+        "filename": "算网大脑-社会算力接入方案V0.2(1).docx",
+        "path": "server\\static\\算网大脑-社会算力接入方案V0.2(1).docx",
+        "size": 2310351
+      },
+      "code": 200,
+      "id": "1c21946f-afaf-4d06-9f0b-3d71f07a8368"
+    },
+    {
+      "body": {
+        "md5": "d38ee66f0a7db2cc04c4f6ec0f3ff64d"
+      },
+      "file": {
+        "fieldname": "file",
+        "originalname": "测试文档.txt",
+        "encoding": "7bit",
+        "mimetype": "text/plain",
+        "destination": "server/static/",
+        "filename": "测试文档.txt",
+        "path": "server\\static\\测试文档.txt",
+        "size": 1640
+      },
+      "code": 200,
+      "id": "35395056-0764-4162-9543-e660d96f1c6c"
+    },
+    {
+      "body": {
+        "md5": "4311b13741569e7427843c6fef3e5ad0"
+      },
+      "file": {
+        "fieldname": "file",
+        "originalname": "职级评审系统用户手册（参评人版）V3.0.pdf",
+        "encoding": "7bit",
+        "mimetype": "application/pdf",
+        "destination": "server/static/",
+        "filename": "职级评审系统用户手册（参评人版）V3.0.pdf",
+        "path": "server\\static\\职级评审系统用户手册（参评人版）V3.0.pdf",
+        "size": 1702940
+      },
+      "code": 200,
+      "id": "72d1c201-c6ec-479f-8264-a12f38fcc5c3"
     }
   ]
 }
