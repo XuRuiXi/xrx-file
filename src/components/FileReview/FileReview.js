@@ -6,7 +6,7 @@ import "video-react/dist/video-react.css";
 import pdfImg from '@/assets/pdf.png';
 import wordImg from '@/assets/word.png';
 import txtImg from '@/assets/txt.png';
-import axios from 'axios';
+import axios from '@/utils/axios';
 
 import styles from './FileReview.less';
 
@@ -25,7 +25,7 @@ const FileReview = () => {
 
   const getAllFile = async () => {
     const res = await axios.get('/getAllFile');
-    setFileList(res.data);
+    if (Array.isArray(res.data)) setFileList(res.data);
   };
 
   const del = async id => {

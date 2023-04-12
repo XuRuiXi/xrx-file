@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Tabs } from 'antd';
+import { BrowserRouter, Routes, Route, Link, NavLink, Navigate, useRoutes, useNavigate } from 'react-router-dom';
+
 import md5 from 'js-md5';
 import { createRoot } from 'react-dom/client';
-import FileReview from './components/FileReview';
-import FileUpload from './components/FileUpload';
+import CheckLogin from '../components/CheckLogin';
+import Home from './Home';
+import Login from './Login';
 import axios from 'axios';
 import styles from './index.less';
 
-const { TabPane } = Tabs;
 
 // 文件上传
 // const App = () => {
@@ -135,59 +136,59 @@ const { TabPane } = Tabs;
 // };
 
 // 大文件切片上传
-const App = () => {
-  const SIZE = 1024 * 30; // 30kb
-  // 创建切片
-  const createFileChunks = function (file) {
-    const count = file.size;
-    if (count <= SIZE) return [file];
-    const mid = Math.floor(count / 2);
-    const leftContent = file.slice(0, mid);
-    const rightContent = file.slice(mid);
-    return [...createFileChunks(leftContent), ...createFileChunks(rightContent)];
-  };
+// const App = () => {
+//   const SIZE = 1024 * 30; // 30kb
+//   // 创建切片
+//   const createFileChunks = function (file) {
+//     const count = file.size;
+//     if (count <= SIZE) return [file];
+//     const mid = Math.floor(count / 2);
+//     const leftContent = file.slice(0, mid);
+//     const rightContent = file.slice(mid);
+//     return [...createFileChunks(leftContent), ...createFileChunks(rightContent)];
+//   };
 
-  // 上传切片
-  const uploadFileChunks = async function (fileChunks, filename) {
-    const total = fileChunks.length;
-    const chunksList = fileChunks.map((chunk, index) => {
-      let formData = new FormData();
-      formData.append('filename', filename);
-      formData.append('hash', index);
-      formData.append('chunk', chunk);
-      formData.append('total', total);
-      return {
-        formData
-      };
-    });
-    const axiosList = chunksList.map(({
-      formData
-    }) => axios({
-      method: 'post',
-      url: 'http://localhost:1111/uploadMulti',
-      data: formData
-    }));
+//   // 上传切片
+//   const uploadFileChunks = async function (fileChunks, filename) {
+//     const total = fileChunks.length;
+//     const chunksList = fileChunks.map((chunk, index) => {
+//       let formData = new FormData();
+//       formData.append('filename', filename);
+//       formData.append('hash', index);
+//       formData.append('chunk', chunk);
+//       formData.append('total', total);
+//       return {
+//         formData
+//       };
+//     });
+//     const axiosList = chunksList.map(({
+//       formData
+//     }) => axios({
+//       method: 'post',
+//       url: 'http://localhost:1111/uploadMulti',
+//       data: formData
+//     }));
 
-    // 限制并发数
-    const concurrencyQuantity = 3;
-    for (let i = 0, len = axiosList.length; i < len; i += concurrencyQuantity) {
-      const list = i + concurrencyQuantity < len ? axiosList.slice(i, i + concurrencyQuantity) : axiosList.slice(i);
-      await Promise.all(list);
-    }
-  };
+//     // 限制并发数
+//     const concurrencyQuantity = 3;
+//     for (let i = 0, len = axiosList.length; i < len; i += concurrencyQuantity) {
+//       const list = i + concurrencyQuantity < len ? axiosList.slice(i, i + concurrencyQuantity) : axiosList.slice(i);
+//       await Promise.all(list);
+//     }
+//   };
 
-  const change = async e => {
-    const file = e.target.files[0];
-    const fileChunks = createFileChunks(file);
-    await uploadFileChunks(fileChunks, file.name);
-  };
+//   const change = async e => {
+//     const file = e.target.files[0];
+//     const fileChunks = createFileChunks(file);
+//     await uploadFileChunks(fileChunks, file.name);
+//   };
 
-  return (
-    <div className={styles.root}>
-      <input type="file" onChange={change} />
-    </div>
-  );
-};
+//   return (
+//     <div className={styles.root}>
+//       <input type="file" onChange={change} />
+//     </div>
+//   );
+// };
 
 // 断点续传
 // const App = () => {
@@ -404,23 +405,34 @@ const App = () => {
 //   );
 // };
 
-const items = [
-  {
-    key: '1',
-    label: `文件上传`,
-    children: <FileUpload />,
-  },
-  {
-    key: '2',
-    label: `文件预览`,
-    children: <FileReview />,
-  },
-];
+// 用来存储导航对象，暴露给其他组件使用
+export const navObj = {};
+
+const Pages = () => {
+  navObj.nav = useNavigate();
+  return useRoutes([
+    {
+      path: '/home',
+      element: <CheckLogin Page={<Home />} />,
+    },
+    {
+      path: '/Mylogin',
+      element: <Login />,
+    },
+    {
+      path: '/',
+      element: <CheckLogin Page={<Home />} />,
+    },
+  ]);
+};
+
 
 const Root = () => {
   return (
     <div className={styles.root}>
-      <Tabs defaultActiveKey="1" items={items} />
+      <BrowserRouter>
+        <Pages />
+      </BrowserRouter>
     </div>
   );
 };

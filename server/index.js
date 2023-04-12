@@ -13,10 +13,11 @@ const multiparty = require('multiparty');
 
 const path = require('path');
 
+
 // 临时文件存储路径
 const STATIC_TEMPORARY = path.resolve(__dirname, './static/temporaryFolder');
 // 文件存储路径
-const STATIC_FILES = path.resolve(__dirname, './static');
+const STATIC_FILES = path.resolve(__dirname, './static/assets');
 
 // 创建server实例
 const app = express();
@@ -30,13 +31,59 @@ app.all("*", function (req, res, next) {
 });
 
 // 中间件
-app.use('/static', express.static('server/static')); // 静态资源
+app.use('/static', express.static(STATIC_FILES)); // 静态资源
 app.use(bodyParser.json()); // 解析json
+
+// 不要校验/login接口,其他接口都要校验
+app.use((req, res, next) => {
+  if (req.url === "/login" || req.url === "/logout") {
+    next();
+  } else {
+    const { authorization: token } = req.headers;
+    if (token) {
+      // 同步读取/user/index.json文件
+      let data = fs.readFileSync(path.resolve(__dirname + "/user/index.json"));
+      // 将读取到的数据转换为json对象
+      data = JSON.parse(data || "{}");
+      const list = data?.list || [];
+      const user = list.find(item => item.token === token);
+      if (user) {
+        // 校验是否过期
+        if (user.expire > Date.now()) {
+          next();
+          // 更新过期时间
+          user.expire = Date.now() + 1000 * 60 * 30;
+          // 同步写入文件
+          fs.writeFileSync(
+            path.resolve(__dirname + "/user/index.json"),
+            JSON.stringify(data, null, 2)
+          );
+        } else {
+          res.json({
+            code: 401,
+            msg: "登录过期",
+          });
+        }
+      } else {
+        res.json({
+          code: 401,
+          msg: "请重新登录",
+        });
+      }
+    } else {
+      res.json({
+        code: 401,
+        msg: "请先登录",
+      });
+    }
+  }
+
+});
 
 // 创建磁盘存储引擎
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "server/static/"); // 保存的路径，备注：需要自己创建
+    cb(null, STATIC_FILES); // 保存的路径，备注：需要自己创建
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname); // 保存的文件名
@@ -189,6 +236,78 @@ app.get("/getAllFile", (req, res) => {
     }
   );
 });
+
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  // 同步读取/user/index.json文件
+  let data = fs.readFileSync(path.resolve(__dirname + "/user/index.json"));
+  // 将读取到的数据转换为json对象
+  data = JSON.parse(data || "{}");
+  const list = data?.list || [];
+  const user = list.find(item => item.username === username);
+
+  if(user){
+    if(user.password === password){
+      const token = uuidv4();
+      user.token = token;
+      user.expire = Date.now() + 1000 * 60 * 30;
+      // 写入文件
+      fs.writeFileSync(
+        path.resolve(__dirname + "/user/index.json"),
+        JSON.stringify(data, null, 2)
+      );
+
+      res.json({
+        code: 200,
+        msg: "登录成功",
+        token,
+      });
+    } else {
+      res.json({
+        code: 500,
+        msg: "账号/密码错误",
+      });
+    }
+  } else {
+    res.json({
+      code: 500,
+      msg: "账号/密码错误",
+    });
+  }
+
+});
+
+// 获取token退出登录
+app.get("/logout", (req, res) => {
+  const { authorization: token } = req.headers;
+
+  // 同步读取/user/index.json文件
+  let data = fs.readFileSync(path.resolve(__dirname + "/user/index.json"));
+  // 将读取到的数据转换为json对象
+  data = JSON.parse(data || "{}");
+  const list = data?.list || [];
+  const user = list.find(item => item.token === token);
+
+  if (user) {
+    user.expire = 0;
+    // 写入文件
+    fs.writeFileSync(
+      path.resolve(__dirname + "/user/index.json"),
+      JSON.stringify(data, null, 2)
+    );
+    res.json({
+      code: 200,
+      msg: "退出成功",
+    });
+  } else {
+    res.json({
+      code: 500,
+      msg: "退出失败",
+    });
+  }
+});
+
 
 
 const port = 1111;

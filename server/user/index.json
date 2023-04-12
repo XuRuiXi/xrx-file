@@ -1,0 +1,10 @@
+{
+  "list": [
+    {
+      "username": "admin",
+      "password": "123456",
+      "token": "77f8713a-10fc-41d8-bedc-5250704b1d72",
+      "expire": 1681293743184
+    }
+  ]
+}

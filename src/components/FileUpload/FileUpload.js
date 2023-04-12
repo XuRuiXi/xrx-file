@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import axios from 'axios';
+import axios from '@/utils/axios';
 import { Button, message, Space } from 'antd';
 import md5 from 'js-md5';
 

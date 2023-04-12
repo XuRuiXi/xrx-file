@@ -9,13 +9,14 @@ module.exports = {
     compress: true, // 服务器压缩
     open: false, // 自动打开页面
     hot: true, // 热更新(默认开启)
-    historyApiFallback: {
-      index: '/index.html'
-    },
+    historyApiFallback: true,
     proxy: {
-      '/': {
-        target: 'http://localhost:1111',
+      '/api': {
+        target: 'http://localhost:1111/',
         changeOrigin: true,
+        pathRewrite: {
+          '^/api': '',
+        },
       },
     },
   },
