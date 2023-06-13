@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      span {
+        display: inline-block;
+        min-width: 100px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div>
+      金罐子：
+      <span id="gold"></span>
+      <button>重置</button>
+      <input type="text" />
+      <button>确定</button>
+    </div>
+    ---
+    <div>
+      银罐子：
+      <span id="silver"></span>
+      <button>重置</button>
+      <input type="text" />
+      <button>确定</button>
+    </div>
+    ---
+    <div>
+      铜罐子：
+      <span id="copper"></span>
+      <button>重置</button>
+      <input type="text" />
+      <button>确定</button>
+    </div>
+    <script>
+      fetch("/getTime")
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.code === 200) {
+            // 把data里面的数据存储到localStorage里面
+            localStorage.setItem("gold", res.data.gold);
+            localStorage.setItem("silver", res.data.silver);
+            localStorage.setItem("copper", res.data.copper);
+            // 开启loop
+            loop();
+          }
+        });
+
+      const GOLD_KEY = "gold";
+      const SILVER_KEY = "silver";
+      const COPPER_KEY = "copper";
+
+      const GOLD_TIME = 360 * 60 * 1000;
+      const SILVER_TIME = 240 * 60 * 1000;
+      const COPPER_TIME = 180 * 60 * 1000;
+
+      const TIME_MAP = {
+        [GOLD_KEY]: GOLD_TIME,
+        [SILVER_KEY]: SILVER_TIME,
+        [COPPER_KEY]: COPPER_TIME,
+      };
+
+      // 根据key获取对应罐子的收获时间
+      function getTime(key) {
+        let time = localStorage.getItem(key);
+        if (time === null) {
+          // 如果没有存储过，就设置一个默认值
+          localStorage.setItem(key, 0);
+          return 0;
+        }
+        return parseInt(time);
+      }
+
+      // 重置金罐子
+      function resetTime(key, time) {
+        // 重置金罐子的收获时间
+        localStorage.setItem(key, Date.now() + time);
+      }
+
+      // 输入剩余的时间戳，计算剩余的时间，如：1天2小时3分钟50秒
+      function getLeftTime(_time) {
+        const time = _time / 1000;
+        let day = Math.floor(time / (24 * 60 * 60));
+        let hour = Math.floor((time / (60 * 60)) % 24);
+        let minute = Math.floor((time / 60) % 60);
+        let second = Math.floor(time % 60);
+
+        if (day === 0 && hour === 0 && minute === 0) {
+          return `${second}秒`;
+        }
+        if (day === 0 && hour === 0) {
+          return `${minute}分钟${second}秒`;
+        }
+        if (day === 0) {
+          return `${hour}小时${minute}分钟${second}秒`;
+        }
+
+        return `${day}天${hour}小时${minute}分钟${second}秒`;
+      }
+
+      // 获取父元素下的span
+      const getSpan = (parent) => parent.querySelector("span");
+      // 获取父元素下的input
+      const getInput = (parent) => parent.querySelector("input");
+
+      // 在document上通过事件委托，监听点击事件，再判断target，然后根据target不同，触发不同逻辑
+      document.addEventListener("click", function (e) {
+        if (e.target.tagName !== "BUTTON") return;
+        const span = getSpan(e.target.parentNode);
+        const input = getInput(e.target.parentNode);
+
+        const id = span.id;
+        const inputVal = input.value;
+
+        if (e.target.innerText === "重置") {
+          // 更新服务器时间
+          fetch("/updateTime", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: id,
+              time: Date.now() + TIME_MAP[id],
+            }),
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              if (res.code === 200) {
+                resetTime(id, TIME_MAP[id]);
+              }
+            });
+        }
+
+        if (e.target.innerText === "确定") {
+          if (inputVal === "") return;
+          // 只能输入数字
+          if (!/^[0-9]+$/.test(inputVal)) {
+            alert("请输入数字");
+            return;
+          }
+          // 更新服务器时间
+          fetch("/updateTime", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: id,
+              time: Date.now() + inputVal * 60 * 1000,
+            }),
+          })
+            .then((res) => res.json())
+            .then((res) => {
+              if (res.code === 200) {
+                resetTime(id, inputVal * 60 * 1000);
+              }
+            });
+        }
+      });
+
+      // 倒计时
+      function loop() {
+        setInterval(() => {
+          let goldTime = getTime(GOLD_KEY);
+          let silverTime = getTime(SILVER_KEY);
+          let copperTime = getTime(COPPER_KEY);
+
+          let goldSpan = getSpan(document.getElementById(GOLD_KEY).parentNode);
+          let silverSpan = getSpan(
+            document.getElementById(SILVER_KEY).parentNode
+          );
+          let copperSpan = getSpan(
+            document.getElementById(COPPER_KEY).parentNode
+          );
+
+          let now = Date.now();
+
+          let goldLeft = goldTime - now;
+          let silverLeft = silverTime - now;
+          let copperLeft = copperTime - now;
+          if (goldLeft <= 0) {
+            goldSpan.innerText = "可收获";
+          } else {
+            goldSpan.innerText = getLeftTime(Math.floor(goldLeft));
+          }
+
+          if (silverLeft <= 0) {
+            silverSpan.innerText = "可收获";
+          } else {
+            silverSpan.innerText = getLeftTime(Math.floor(silverLeft));
+          }
+
+          if (copperLeft <= 0) {
+            copperSpan.innerText = "可收获";
+          } else {
+            copperSpan.innerText = getLeftTime(Math.floor(copperLeft));
+          }
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>

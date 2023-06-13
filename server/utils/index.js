@@ -114,9 +114,31 @@ function deleteFolder(filepath) {
 }
 
 
+// 输入剩余的时间戳，计算剩余的时间，如：1天2小时3分钟50秒
+function getLeftTime(_time) {
+  const time = _time / 1000;
+  let day = Math.floor(time / (24 * 60 * 60));
+  let hour = Math.floor((time / (60 * 60)) % 24);
+  let minute = Math.floor((time / 60) % 60);
+  let second = Math.floor(time % 60);
+
+  if (day === 0 && hour === 0 && minute === 0) {
+    return `${second}秒`;
+  }
+  if (day === 0 && hour === 0) {
+    return `${minute}分钟${second}秒`;
+  }
+  if (day === 0) {
+    return `${hour}小时${minute}分钟${second}秒`;
+  }
+
+  return `${day}天${hour}小时${minute}分钟${second}秒`;
+}
+
 module.exports = {
   getLocalIP,
   updateJson,
   delFile,
   addFile,
+  getLeftTime
 };

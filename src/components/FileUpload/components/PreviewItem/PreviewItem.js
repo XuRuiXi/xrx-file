@@ -4,6 +4,7 @@ import pdfImg from '@/assets/pdf.png';
 import wordImg from '@/assets/word.png';
 import videoImg from '@/assets/video.png';
 import txtImg from '@/assets/txt.png';
+import html from '@/assets/html.png';
 import styles from './PreviewItem.less';
 
 // 支持的视频格式
@@ -37,6 +38,10 @@ const PreviewItem = (props) => {
     }
     if (fileType === 'txt') {
       setSrc(txtImg);
+      return;
+    }
+    if (fileType === 'html') {
+      setSrc(html);
       return;
     }
     

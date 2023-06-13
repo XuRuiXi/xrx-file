@@ -6,6 +6,7 @@ import "video-react/dist/video-react.css";
 import pdfImg from '@/assets/pdf.png';
 import wordImg from '@/assets/word.png';
 import txtImg from '@/assets/txt.png';
+import htmlImg from '@/assets/html.png';
 import axios from '@/utils/axios';
 
 import styles from './FileReview.less';
@@ -49,6 +50,7 @@ const FileReview = () => {
     if (type === 'pdf') return pdfImg;
     if (type === 'doc' || type === 'docx') return wordImg;
     if (type === 'txt') return txtImg;
+    if (type === 'html') return htmlImg;
     return url;
   };
 
@@ -209,7 +211,7 @@ const FileReview = () => {
                 操作：
                   <Space size="middle">
                     <Popconfirm
-                      title="确认删除该图片吗？"
+                      title="确认删除该文件吗？"
                       onConfirm={() => del(item.id)}
                       okText="是"
                       cancelText="否"
@@ -230,6 +232,13 @@ const FileReview = () => {
                       getFileType(item.file.filename) === 'txt' && (
                         <a onClick={() => previewPdf(item.url)}>
                           预览txt
+                        </a>
+                      )
+                    }
+                    {
+                      getFileType(item.file.filename) === 'html' && (
+                        <a onClick={() => previewPdf(item.url)}>
+                          预览html
                         </a>
                       )
                     }

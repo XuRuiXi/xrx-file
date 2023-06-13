@@ -3,8 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 // 文件系统
 const fs = require("fs");
+const cheerio = require("cheerio");
 
-const { getLocalIP, updateJson, delFile, addFile } = require("./utils");
+const { getLocalIP, updateJson, delFile, addFile, getLeftTime } = require("./utils");
 const { v4: uuidv4 } = require("uuid");
 // multer是一个node.js中间件，用于处理multipart/form-data类型的表单数据，它主要用于上传文件
 const multer = require("multer");
@@ -35,8 +36,9 @@ app.use('/static', express.static(STATIC_FILES)); // 静态资源
 app.use(bodyParser.json()); // 解析json
 
 // 不要校验/login接口,其他接口都要校验
+const whiteList = ["/login", "/logout", "/xianyu", "/getTime", "/updateTime"];
 app.use((req, res, next) => {
-  if (req.url === "/login" || req.url === "/logout") {
+  if (whiteList.includes(req.path)) {
     next();
   } else {
     const { authorization: token } = req.headers;
@@ -306,6 +308,68 @@ app.get("/logout", (req, res) => {
       msg: "退出失败",
     });
   }
+});
+
+// 保存各个罐子的时间
+const timeMap = {
+  gold: '',
+  silver: '',
+  copper: '',
+};
+
+// 获取各个罐子的时间
+app.get("/getTime", (req, res) => {
+  res.json({
+    code: 200,
+    data: timeMap,
+  });
+});
+
+// 单独更新某个罐子的时间
+app.post("/updateTime", (req, res) => {
+  const { type, time } = req.body;
+  timeMap[type] = time;
+  res.json({
+    code: 200,
+    data: timeMap,
+  });
+});
+
+// 输出一段html
+app.get('/xianyu', (req, res) => {
+  // 读取static文件夹下的xianyu.html文件
+  fs.readFile(STATIC_FILES + '/xianyu.html', 'utf-8', function (err, data) {
+    // 根据html字符串，获取到id分别为gold、silver、copper的元素
+    // cheerio是一个类似于jquery的库，可以通过类似于jquery的语法获取到html中的元素
+    const $ = cheerio.load(data);
+
+    let now = Date.now();
+
+    let goldLeft = timeMap.gold - now;
+    let silverLeft = timeMap.silver - now;
+    let copperLeft = timeMap.copper - now;
+
+    let goldText = '';
+    let silverText = '';
+    let copperText = '';
+    if (goldLeft <= 0) goldText = '可收获';
+    else goldText = getLeftTime(Math.floor(goldLeft));
+
+    if (silverLeft <= 0) silverText = '可收获';
+    else silverText = getLeftTime(Math.floor(silverLeft));
+
+    if (copperLeft <= 0) copperText = '可收获';
+    else copperText = getLeftTime(Math.floor(copperLeft));
+
+    // 获取到id为gold的元素，设置其内容为timeMap中gold的值
+    $('#gold').html(goldText);
+    // 获取到id为silver的元素，设置其内容为timeMap中silver的值
+    $('#silver').html(silverText);
+    // 获取到id为copper的元素，设置其内容为timeMap中copper的值
+    $('#copper').html(copperText);
+    // 将修改后的html字符串返回给前端
+    res.send($.html());
+  });
 });
 
 

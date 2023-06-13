@@ -101,6 +101,23 @@
       },
       "code": 200,
       "id": "d4388ff1-545e-4bac-947a-1d643488166e"
+    },
+    {
+      "body": {
+        "md5": "0b4bbc92f861eee9111ae6f1094627e1"
+      },
+      "file": {
+        "fieldname": "file",
+        "originalname": "xianyu.html",
+        "encoding": "7bit",
+        "mimetype": "text/html",
+        "destination": "c:\\Users\\xuruixi\\Desktop\\npm发布包\\xrx-file\\server\\static\\assets",
+        "filename": "xianyu.html",
+        "path": "c:\\Users\\xuruixi\\Desktop\\npm发布包\\xrx-file\\server\\static\\assets\\xianyu.html",
+        "size": 6323
+      },
+      "code": 200,
+      "id": "164138ba-d47a-4ca4-b586-d260618fc12d"
     }
   ]
 }
